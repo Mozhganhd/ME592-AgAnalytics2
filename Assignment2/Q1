@@ -1,0 +1,64 @@
+#Q1:
+import cv2
+import matplotlib.pyplot as plt
+import os
+import numpy as np
+import random
+from skimage.transform import rotate,rescale,resize, AffineTransform, warp
+from glob import glob
+
+#Q1.1:
+
+#Image augmentation using respective function with random inputs
+def rotation(img):
+    angle = random.randint(0, 359)
+    img = rotate(img, angle)
+    return img
+
+def scale(img):
+    width = np.arange(10, img.shape[0], 20)
+    height = np.arange(10, img.shape[1], 20)
+    w, h = random.choice(width), random.choice(height)
+    resized_img = cv2.resize(img, (w, h))
+    img = np.uint8(resized_img)
+    return img
+
+def shift(img):
+    horizontal_shift = random.randint(-1*img.shape[0], img.shape[0]) # changing x and y (read dovs on skimage transforms)
+    vertical_shift = random.randint(-1*img.shape[1], img.shape[1])
+    transform = AffineTransform(translation=(horizontal_shift, vertical_shift))
+    img = warp(img, transform, mode='wrap')
+    return img
+
+def warping(img):
+    shear_factor = random.uniform(-0.5, 0.5)
+    transform = AffineTransform(shear=shear_factor)
+    img = warp(img, transform, mode='wrap')
+    return img
+
+#Reading the images 
+images = []
+files = os.listdir("leaves/")
+for i in files:
+    image = cv2.imread("leaves/"+i)
+    images.append(image)
+    
+#Choosing transformation functions randomly and performing augmentation
+number_of_aug = 100
+for i in range(0, number_of_aug):
+    image_no = random.randint(0, len(images)-1)  
+    image = images[image_no]
+    transformations = ['rotate', 'scale', 'shift', 'warp']
+    transform_choice = random.choice(transformations)
+    if(transform_choice=='rotate'):
+        aug_image = rotation(image)
+    elif(transform_choice=='scale'):
+        aug_image = scale(image)
+    elif(transform_choice=='shift'):
+        aug_image = shift(image)
+    else:
+        aug_image = warping(image)
+    #Saving the tranformed images
+    plt.imsave("TransformedLeaves/"+str(transform_choice)+str(i)+'.png', aug_image)
+    # print(i)
+    
